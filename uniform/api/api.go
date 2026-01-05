@@ -6,7 +6,7 @@ import (
 	"github.com/zzy-rabbit/xtools/xplugin"
 )
 
-const PluginName = "xtools.plugins.uniform"
+const PluginName = "bp.uniform"
 
 type Config struct {
 }

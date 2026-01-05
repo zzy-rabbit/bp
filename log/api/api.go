@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	PluginName = "xtools.plugins.log"
+	PluginName = "bp.log"
 )
 
 type IPlugin interface {
