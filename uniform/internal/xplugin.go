@@ -10,8 +10,8 @@ import (
 
 type service struct {
 	seq      atomic.Uint64
-	IEncrypt encryptApi.IPlugin `xplugins:"bp.encrypt"`
-	ILogger  logApi.IPlugin     `xplugins:"bp.log"`
+	IEncrypt encryptApi.IPlugin `xplugin:"bp.encrypt"`
+	ILogger  logApi.IPlugin     `xplugin:"bp.log"`
 }
 
 func New(ctx context.Context) api.IPlugin {

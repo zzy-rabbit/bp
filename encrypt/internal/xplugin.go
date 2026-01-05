@@ -9,7 +9,7 @@ import (
 
 type service struct {
 	seq     atomic.Uint64
-	ILogger logApi.IPlugin `xplugins:"bp.log"`
+	ILogger logApi.IPlugin `xplugin:"bp.log"`
 }
 
 func New(ctx context.Context) api.IPlugin {
