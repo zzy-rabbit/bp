@@ -6,7 +6,7 @@ import (
 	"github.com/zzy-rabbit/xtools/xplugin"
 )
 
-const PluginName = "xtools.plugins.encrypt"
+const PluginName = "bp.encrypt"
 
 const (
 	EncryptTypePlainText = iota + 1
