@@ -1,10 +1,24 @@
 module github.com/zzy-rabbit/bp
 
-go 1.24
-
-require github.com/zzy-rabbit/xtools v0.0.0-20260105033627-2a91af8db85b
+go 1.24.0
 
 require (
+	github.com/gofiber/fiber/v2 v2.52.12
+	github.com/gorilla/websocket v1.5.3
+	github.com/zzy-rabbit/xtools v0.0.0-20260105080145-57d0a206dcd7
+)
+
+require (
+	github.com/andybalholm/brotli v1.1.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
+	github.com/klauspost/compress v1.17.9 // indirect
+	github.com/mattn/go-colorable v0.1.13 // indirect
+	github.com/mattn/go-isatty v0.0.20 // indirect
+	github.com/mattn/go-runewidth v0.0.16 // indirect
+	github.com/rivo/uniseg v0.2.0 // indirect
+	github.com/valyala/bytebufferpool v1.0.0 // indirect
+	github.com/valyala/fasthttp v1.51.0 // indirect
+	github.com/valyala/tcplisten v1.0.0 // indirect
+	golang.org/x/sys v0.28.0 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
 )
