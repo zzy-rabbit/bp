@@ -5,7 +5,7 @@ go 1.24.0
 require (
 	github.com/gofiber/fiber/v2 v2.52.12
 	github.com/gorilla/websocket v1.5.3
-	github.com/zzy-rabbit/xtools v0.0.0-20260227151112-48d35ee16b5e
+	github.com/zzy-rabbit/xtools v0.0.0-20260227154022-fe8024aa1d60
 )
 
 require (
