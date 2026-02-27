@@ -33,6 +33,8 @@ func (s *service) Init(ctx context.Context, initParam string) error {
 		return err
 	}
 	s.fiberApp = fiber.New()
+	s.registerMiddlewares()
+
 	s.network = network
 	s.ILogger.Info(ctx, "plugin %s init success", s.GetName(ctx))
 	return nil
