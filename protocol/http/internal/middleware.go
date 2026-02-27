@@ -13,7 +13,7 @@ import (
 func (s *service) corsMiddleware() fiber.Handler {
 	return cors.New(cors.Config{
 		AllowOrigins:     "*",
-		AllowCredentials: true,
+		AllowCredentials: false,
 		AllowMethods: strings.Join([]string{
 			http.MethodGet,
 			http.MethodPost,
