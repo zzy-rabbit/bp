@@ -29,7 +29,6 @@ func (s *service) corsMiddleware() fiber.Handler {
 
 func (s *service) timingMiddleware() fiber.Handler {
 	ignore := func() bool {
-
 		return false
 	}
 	const format = "%s %s %s\nrequestBody: %s\nresponseBody %s"
