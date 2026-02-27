@@ -2,9 +2,7 @@ package internal
 
 import (
 	"context"
-	"encoding/json"
 	"github.com/zzy-rabbit/bp/tool/log/api"
-	"github.com/zzy-rabbit/xtools/xerror"
 	"github.com/zzy-rabbit/xtools/xlog"
 )
 
@@ -22,14 +20,15 @@ func (s *service) GetName(ctx context.Context) string {
 }
 
 func (s *service) Init(ctx context.Context, initParam string) error {
-	err := json.Unmarshal([]byte(initParam), &s.config)
-	if xerror.Error(err) {
-		return err
-	}
-	logger, err := xlog.New(ctx, s.config)
-	if xerror.Error(err) {
-		return err
-	}
+	//err := json.Unmarshal([]byte(initParam), &s.config)
+	//if xerror.Error(err) {
+	//	return err
+	//}
+	//logger, err := xlog.New(ctx, s.config)
+	//if xerror.Error(err) {
+	//	return err
+	//}
+	logger := xlog.GetDefaultLogger(ctx)
 	s.ILogger = logger
 	s.ILogger.Info(ctx, "plugin %s init success", s.GetName(ctx))
 	return nil

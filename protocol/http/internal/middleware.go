@@ -5,7 +5,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/zzy-rabbit/xtools/xcontext"
-	"log"
 	"net/http"
 	"strings"
 )
@@ -47,7 +46,7 @@ func (s *service) timingMiddleware() fiber.Handler {
 			reqBody = ctx.Body()
 		}
 
-		log.Printf("HTTP_REQUEST "+format, ctx.IP(), ctx.Method(), ctx.Path(), reqBody, "")
+		s.ILogger.Info(userCtx, "HTTP_REQUEST "+format, ctx.IP(), ctx.Method(), ctx.Path(), reqBody, "")
 
 		_ = ctx.Next()
 
@@ -57,8 +56,8 @@ func (s *service) timingMiddleware() fiber.Handler {
 		} else {
 			respBody = ctx.Response().Body()
 		}
-		log.Printf("HTTP_RESPONSE "+format, ctx.IP(), ctx.Method(), ctx.Path(), reqBody, respBody)
-		log.Printf("HTTP_COST %s %s %v", ctx.IP(), ctx.Method(), xcontext.Since(userCtx))
+		s.ILogger.Info(userCtx, "HTTP_RESPONSE "+format, ctx.IP(), ctx.Method(), ctx.Path(), reqBody, respBody)
+		s.ILogger.Info(userCtx, "HTTP_COST %s %s %v", ctx.IP(), ctx.Method(), xcontext.Since(userCtx))
 		return nil
 	}
 }
