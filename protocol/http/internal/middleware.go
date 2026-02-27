@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/zzy-rabbit/xtools/xcontext"
@@ -32,7 +33,7 @@ func (s *service) timingMiddleware() fiber.Handler {
 		return false
 	}
 	const format = "%s %s %s\nrequestBody: %s\nresponseBody %s"
-
+	fmt.Println("timingMiddleware")
 	return func(ctx *fiber.Ctx) error {
 		userCtx := xcontext.Background()
 		ctx.SetUserContext(userCtx)
@@ -63,6 +64,6 @@ func (s *service) timingMiddleware() fiber.Handler {
 }
 
 func (s *service) registerMiddlewares() {
-	middlewares := []any{"/", s.corsMiddleware, s.timingMiddleware}
+	middlewares := []any{"/", s.corsMiddleware(), s.timingMiddleware()}
 	s.fiberApp.Use(middlewares...)
 }
