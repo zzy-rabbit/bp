@@ -1,6 +1,8 @@
 package api
 
 import (
+	"context"
+	"github.com/zzy-rabbit/xtools/xerror"
 	"time"
 
 	"github.com/zzy-rabbit/xtools/xplugin"
@@ -23,4 +25,6 @@ type Task struct {
 
 type IPlugin interface {
 	xplugin.IPlugin
+	Register(ctx context.Context, name string, spec string, job Job) xerror.IError
+	Unregister(ctx context.Context, name string)
 }
