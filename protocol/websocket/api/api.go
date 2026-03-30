@@ -35,6 +35,7 @@ type OnConnCallbackFunc func(ctx context.Context, conn IConn, req Request)
 
 type IServer interface {
 	Handler(ctx context.Context, url string, callback OnConnCallbackFunc)
+	Close(ctx context.Context)
 }
 
 type Request struct {
