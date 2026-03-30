@@ -24,6 +24,7 @@ type IConn interface {
 	Send(ctx context.Context, frame uniformApi.Frame, timeout time.Duration) (uniformApi.Frame, xerror.IError)
 	Post(ctx context.Context, frame uniformApi.Frame) xerror.IError
 	SetCallback(ctx context.Context, callback OnReceiveCallbackFunc)
+	Close(ctx context.Context)
 }
 
 type IClient interface {

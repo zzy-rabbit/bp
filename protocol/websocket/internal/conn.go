@@ -18,9 +18,11 @@ type connection struct {
 	async    *async
 	callback api.OnReceiveCallbackFunc
 	sendChan chan []byte
+	cancel   context.CancelFunc
 }
 
 func (s *service) NewConnection(ctx context.Context, conn *websocket.Conn) api.IConn {
+	ctx, cancel := context.WithCancel(ctx)
 	c := &connection{
 		conn:  conn,
 		async: NewSync(ctx),
@@ -28,6 +30,7 @@ func (s *service) NewConnection(ctx context.Context, conn *websocket.Conn) api.I
 		},
 		IUniform: s.IUniform,
 		sendChan: make(chan []byte, 1024),
+		cancel:   cancel,
 	}
 	c.startReceiveMonitor(ctx)
 	c.startSendMonitor(ctx)
@@ -122,4 +125,8 @@ func (c *connection) startReceiveMonitor(ctx context.Context) {
 			}
 		}
 	}()
+}
+
+func (c *connection) Close(ctx context.Context) {
+	c.cancel()
 }

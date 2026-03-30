@@ -18,9 +18,11 @@ type server struct {
 	mux     *http.ServeMux
 	httpSvr *http.Server
 	service *service
+	cancel  context.CancelFunc
 }
 
 func (s *service) NewServer(ctx context.Context, addr string) api.IServer {
+	ctx, cancel := context.WithCancel(ctx)
 	svr := &server{
 		ILogger: s.ILogger,
 		conns:   make(map[string]api.IConn),
@@ -31,10 +33,17 @@ func (s *service) NewServer(ctx context.Context, addr string) api.IServer {
 		},
 		mux:     http.NewServeMux(),
 		service: s,
+		cancel:  cancel,
 	}
 	svr.httpSvr = &http.Server{Addr: addr, Handler: svr.mux}
 	go func() {
 		for {
+			select {
+			case <-ctx.Done():
+				s.ILogger.Info(ctx, "websocket server stop")
+				return
+			default:
+			}
 			err := svr.httpSvr.ListenAndServe()
 			if err != nil {
 				time.Sleep(time.Second * 3)
@@ -59,6 +68,15 @@ func (s *server) Handler(ctx context.Context, url string, callback api.OnConnCal
 		s.conns[c.RemoteAddr(ctx).String()] = c
 		callback(ctx, c, req)
 	})
+}
+
+func (s *server) Close(ctx context.Context) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	for _, c := range s.conns {
+		c.Close(ctx)
+	}
+	s.cancel()
 }
 
 //func (s *server) handler(w http.ResponseWriter, r *http.Request) {
