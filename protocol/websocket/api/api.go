@@ -46,5 +46,5 @@ type Request struct {
 type ITransport interface {
 	xplugin.IPlugin
 	ConnTo(ctx context.Context, url string) (IClient, xerror.IError)
-	ListenAt(ctx context.Context, addr string, callback OnConnCallbackFunc) (IServer, xerror.IError)
+	ListenAt(ctx context.Context, addr, url string, callback OnConnCallbackFunc) (IServer, xerror.IError)
 }

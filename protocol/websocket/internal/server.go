@@ -19,7 +19,7 @@ type server struct {
 	service  *service
 }
 
-func (s *service) NewServer(ctx context.Context, addr string, callback api.OnConnCallbackFunc) api.IServer {
+func (s *service) NewServer(ctx context.Context, addr, url string, callback api.OnConnCallbackFunc) api.IServer {
 	svr := &server{
 		conns:    make(map[string]api.IConn),
 		callback: callback,
@@ -31,7 +31,7 @@ func (s *service) NewServer(ctx context.Context, addr string, callback api.OnCon
 		mux:     http.NewServeMux(),
 		service: s,
 	}
-	svr.mux.HandleFunc("/", svr.handler)
+	svr.mux.HandleFunc(url, svr.handler)
 	svr.httpSvr = &http.Server{Addr: addr, Handler: svr.mux}
 	go func() {
 		for {
