@@ -33,6 +33,7 @@ type IClient interface {
 type OnConnCallbackFunc func(ctx context.Context, conn IConn, req Request)
 
 type IServer interface {
+	Handler(ctx context.Context, url string, callback OnConnCallbackFunc)
 }
 
 type Request struct {
@@ -42,5 +43,5 @@ type Request struct {
 type IPlugin interface {
 	xplugin.IPlugin
 	ConnTo(ctx context.Context, url string) (IClient, xerror.IError)
-	ListenAt(ctx context.Context, addr, url string, callback OnConnCallbackFunc) (IServer, xerror.IError)
+	ListenAt(ctx context.Context, addr string) (IServer, xerror.IError)
 }
