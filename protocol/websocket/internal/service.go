@@ -10,6 +10,6 @@ func (s *service) ConnTo(ctx context.Context, url string) (api.IClient, xerror.I
 	return s.NewClient(ctx, url)
 }
 
-func (s *service) ListenAt(ctx context.Context, addr, url string, callback api.OnConnCallbackFunc) (api.IServer, xerror.IError) {
-	return s.NewServer(ctx, addr, url, callback), nil
+func (s *service) ListenAt(ctx context.Context, addr string) (api.IServer, xerror.IError) {
+	return s.NewServer(ctx, addr), nil
 }
