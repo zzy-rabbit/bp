@@ -7,6 +7,8 @@ import (
 	httpApi "github.com/zzy-rabbit/bp/protocol/http/api"
 	logApi "github.com/zzy-rabbit/bp/tool/log/api"
 	"github.com/zzy-rabbit/xtools/xerror"
+	"github.com/zzy-rabbit/xtools/xfile"
+	"os"
 )
 
 type service struct {
@@ -31,6 +33,15 @@ func (s *service) Init(ctx context.Context, initParam string) error {
 		return err
 	}
 
+	if xfile.IsExist(ctx, s.config.RootPath) {
+		s.ILogger.Info(ctx, "plugin %s tus root path %s not exist, try to create", s.GetName(ctx), s.config.RootPath)
+		err = os.MkdirAll(s.config.RootPath, os.ModePerm)
+		if xerror.Error(err) {
+			s.ILogger.Error(ctx, "plugin %s tus create root path %s fail %v", s.GetName(ctx), s.config.RootPath, err)
+			return err
+		}
+	}
+
 	tusHandler, xerr := s.NewTusHandler(ctx)
 	if xerror.Error(xerr) {
 		s.ILogger.Error(ctx, "plugin %s init tus handler fail %v", s.GetName(ctx), err)
@@ -52,6 +63,7 @@ func (s *service) Run(ctx context.Context, runParam string) error {
 }
 
 func (s *service) Stop(ctx context.Context, stopParam string) error {
+	s.Tus.Stop(ctx)
 	s.ILogger.Info(ctx, "plugin %s stop success", s.GetName(ctx))
 	return nil
 }
