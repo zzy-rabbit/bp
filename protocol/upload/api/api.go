@@ -13,6 +13,8 @@ const (
 type Config struct {
 	RootPath string `json:"root_path"`
 	BaseURL  string `json:"base_url"`
+	Expire   int    `json:"expire"`
+	Interval int    `json:"interval"`
 }
 
 // NotifyCreatedCallback 事件通知 创建成功

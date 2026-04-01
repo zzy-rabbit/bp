@@ -16,6 +16,7 @@ type service struct {
 	IHttp   httpApi.IPlugin `xplugin:"bp.protocol.http"`
 	config  api.Config
 	*Tus
+	cancel context.CancelFunc
 }
 
 func New(ctx context.Context) api.IPlugin {
@@ -57,13 +58,16 @@ func (s *service) Init(ctx context.Context, initParam string) error {
 }
 
 func (s *service) Run(ctx context.Context, runParam string) error {
-	s.Tus.startMonitor(ctx)
+	ctx, cancel := context.WithCancel(ctx)
+	s.cancel = cancel
+	s.Tus.startEventMonitor(ctx)
+	s.startExpireMonitor(ctx)
 	s.ILogger.Info(ctx, "plugin %s run success", s.GetName(ctx))
 	return nil
 }
 
 func (s *service) Stop(ctx context.Context, stopParam string) error {
-	s.Tus.Stop(ctx)
+	s.cancel()
 	s.ILogger.Info(ctx, "plugin %s stop success", s.GetName(ctx))
 	return nil
 }

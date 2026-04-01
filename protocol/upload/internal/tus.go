@@ -7,6 +7,7 @@ import (
 	"github.com/zzy-rabbit/bp/protocol/upload/api"
 	logApi "github.com/zzy-rabbit/bp/tool/log/api"
 	"github.com/zzy-rabbit/xtools/xerror"
+	"runtime/debug"
 	"sync"
 )
 
@@ -14,8 +15,7 @@ type Tus struct {
 	ILogger logApi.IPlugin `xplugin:"bp.tool.log"`
 	*handler.Handler
 	handler.Config
-	cancel context.CancelFunc
-	mutex  sync.RWMutex
+	mutex sync.RWMutex
 
 	NotifyCreatedCallback         api.NotifyCreatedCallback
 	NotifyCompletedCallback       api.NotifyCompletedCallback
@@ -26,8 +26,6 @@ type Tus struct {
 }
 
 func (s *service) NewTusHandler(ctx context.Context) (*Tus, xerror.IError) {
-	ctx, cancel := context.WithCancel(ctx)
-
 	store := filestore.FileStore{
 		Path: s.config.RootPath,
 	}
@@ -37,7 +35,6 @@ func (s *service) NewTusHandler(ctx context.Context) (*Tus, xerror.IError) {
 
 	tusHandler := &Tus{
 		ILogger: s.ILogger,
-		cancel:  cancel,
 	}
 	tusHandler.Config = handler.Config{
 		BasePath:                s.config.BaseURL,
@@ -74,8 +71,13 @@ func (s *service) NewTusHandler(ctx context.Context) (*Tus, xerror.IError) {
 	return tusHandler, nil
 }
 
-func (t *Tus) startMonitor(ctx context.Context) {
+func (t *Tus) startEventMonitor(ctx context.Context) {
 	go func() {
+		defer func() {
+			if err := recover(); err != nil {
+				t.ILogger.Error(ctx, "tusd handler panic %v %s", err, debug.Stack())
+			}
+		}()
 		for {
 			select {
 			case <-ctx.Done():
@@ -110,6 +112,52 @@ func (t *Tus) startMonitor(ctx context.Context) {
 	}()
 }
 
-func (t *Tus) Stop(ctx context.Context) {
-	t.cancel()
+func (t *Tus) SetNotifyCreatedCallback(ctx context.Context, callback api.NotifyCreatedCallback) {
+	t.mutex.Lock()
+	defer t.mutex.Unlock()
+	t.NotifyCreatedCallback = callback
+}
+
+func (t *Tus) SetNotifyCompletedCallback(ctx context.Context, callback api.NotifyCompletedCallback) {
+	t.mutex.Lock()
+	defer t.mutex.Unlock()
+	t.NotifyCompletedCallback = callback
+}
+
+func (t *Tus) SetNotifyTerminatedCallback(ctx context.Context, callback api.NotifyTerminatedCallback) {
+	t.mutex.Lock()
+	defer t.mutex.Unlock()
+	t.NotifyTerminatedCallback = callback
+}
+
+func (t *Tus) SetNotifyProgressChangedCallback(ctx context.Context, callback api.NotifyProgressChangedCallback) {
+	t.mutex.Lock()
+	defer t.mutex.Unlock()
+	t.NotifyProgressChangedCallback = callback
+}
+
+func eventCallback(callbacks ...func(context.Context, handler.HookEvent) error) func(context.Context, handler.HookEvent) error {
+	return func(ctx context.Context, event handler.HookEvent) error {
+		for _, cb := range callbacks {
+			if cb != nil {
+				err := cb(ctx, event)
+				if xerror.Error(err) {
+					return err
+				}
+			}
+		}
+		return nil
+	}
+}
+
+func (t *Tus) SetPreCreateCallback(ctx context.Context, callback api.PreCreateCallback) {
+	t.mutex.Lock()
+	defer t.mutex.Unlock()
+	t.PreCreateCallback = eventCallback(t.PreCreateCallback, callback)
+}
+
+func (t *Tus) SetPreCompleteCallback(ctx context.Context, callback api.PreCompleteCallback) {
+	t.mutex.Lock()
+	defer t.mutex.Unlock()
+	t.PreCompleteCallback = eventCallback(t.PreCompleteCallback, callback)
 }

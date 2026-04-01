@@ -2,57 +2,48 @@ package internal
 
 import (
 	"context"
-	"github.com/tus/tusd/pkg/handler"
-	"github.com/zzy-rabbit/bp/protocol/upload/api"
 	"github.com/zzy-rabbit/xtools/xerror"
+	"io/fs"
+	"os"
+	"path/filepath"
+	"runtime/debug"
+	"time"
 )
 
-func (t *Tus) SetNotifyCreatedCallback(ctx context.Context, callback api.NotifyCreatedCallback) {
-	t.mutex.Lock()
-	defer t.mutex.Unlock()
-	t.NotifyCreatedCallback = callback
-}
-
-func (t *Tus) SetNotifyCompletedCallback(ctx context.Context, callback api.NotifyCompletedCallback) {
-	t.mutex.Lock()
-	defer t.mutex.Unlock()
-	t.NotifyCompletedCallback = callback
-}
-
-func (t *Tus) SetNotifyTerminatedCallback(ctx context.Context, callback api.NotifyTerminatedCallback) {
-	t.mutex.Lock()
-	defer t.mutex.Unlock()
-	t.NotifyTerminatedCallback = callback
-}
-
-func (t *Tus) SetNotifyProgressChangedCallback(ctx context.Context, callback api.NotifyProgressChangedCallback) {
-	t.mutex.Lock()
-	defer t.mutex.Unlock()
-	t.NotifyProgressChangedCallback = callback
-}
-
-func eventCallback(callbacks ...func(context.Context, handler.HookEvent) error) func(context.Context, handler.HookEvent) error {
-	return func(ctx context.Context, event handler.HookEvent) error {
-		for _, cb := range callbacks {
-			if cb != nil {
-				err := cb(ctx, event)
+func (s *service) startExpireMonitor(ctx context.Context) {
+	go func() {
+		defer func() {
+			if err := recover(); err != nil {
+				s.ILogger.Error(ctx, "tusd handler panic %v %s", err, debug.Stack())
+			}
+		}()
+		for {
+			select {
+			case <-ctx.Done():
+				s.ILogger.Info(ctx, "expire monitor exist")
+				return
+			case <-time.After(time.Second * time.Duration(s.config.Interval)):
+				err := filepath.Walk(s.config.RootPath, func(path string, info fs.FileInfo, err error) error {
+					if xerror.Error(err) {
+						s.ILogger.Error(ctx, "expire monitor walk path %s fail %v", path, err)
+						return err
+					}
+					if info.IsDir() {
+						return nil
+					}
+					if int(time.Now().Unix()-info.ModTime().Unix()) > s.config.Expire {
+						s.ILogger.Info(ctx, "expire monitor delete path %s", path)
+						err = os.RemoveAll(path)
+						if xerror.Error(err) {
+							s.ILogger.Error(ctx, "expire monitor delete path %s fail %v", path, err)
+						}
+					}
+					return nil
+				})
 				if xerror.Error(err) {
-					return err
+					s.ILogger.Error(ctx, "expire monitor walk path %s fail %v", s.config.RootPath, err)
 				}
 			}
 		}
-		return nil
-	}
-}
-
-func (t *Tus) SetPreCreateCallback(ctx context.Context, callback api.PreCreateCallback) {
-	t.mutex.Lock()
-	defer t.mutex.Unlock()
-	t.PreCreateCallback = eventCallback(t.PreCreateCallback, callback)
-}
-
-func (t *Tus) SetPreCompleteCallback(ctx context.Context, callback api.PreCompleteCallback) {
-	t.mutex.Lock()
-	defer t.mutex.Unlock()
-	t.PreCompleteCallback = eventCallback(t.PreCompleteCallback, callback)
+	}()
 }
