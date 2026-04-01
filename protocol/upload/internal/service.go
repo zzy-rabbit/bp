@@ -3,7 +3,7 @@ package internal
 import (
 	"context"
 	"github.com/tus/tusd/pkg/handler"
-	"github.com/zzy-rabbit/bp/protocol/file/api"
+	"github.com/zzy-rabbit/bp/protocol/upload/api"
 	"github.com/zzy-rabbit/xtools/xerror"
 )
 

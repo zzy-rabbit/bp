@@ -3,8 +3,8 @@ package internal
 import (
 	"context"
 	"encoding/json"
-	"github.com/zzy-rabbit/bp/protocol/file/api"
 	httpApi "github.com/zzy-rabbit/bp/protocol/http/api"
+	"github.com/zzy-rabbit/bp/protocol/upload/api"
 	logApi "github.com/zzy-rabbit/bp/tool/log/api"
 	"github.com/zzy-rabbit/xtools/xerror"
 	"github.com/zzy-rabbit/xtools/xfile"

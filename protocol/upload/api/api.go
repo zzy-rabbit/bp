@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	PluginName = "bp.protocol.file"
+	PluginName = "bp.protocol.upload"
 )
 
 type Config struct {

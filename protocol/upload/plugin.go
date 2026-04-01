@@ -1,7 +1,7 @@
-package file
+package upload
 
 import (
-	"github.com/zzy-rabbit/bp/protocol/file/internal"
+	"github.com/zzy-rabbit/bp/protocol/upload/internal"
 	"github.com/zzy-rabbit/xtools/xcontext"
 	"github.com/zzy-rabbit/xtools/xerror"
 	"github.com/zzy-rabbit/xtools/xplugin"
