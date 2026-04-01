@@ -6,11 +6,13 @@ require (
 	github.com/gofiber/fiber/v2 v2.52.12
 	github.com/gorilla/websocket v1.5.3
 	github.com/robfig/cron/v3 v3.0.0
+	github.com/tus/tusd v1.13.0
 	github.com/zzy-rabbit/xtools v0.0.0-20260401020547-e83484b35bd5
 )
 
 require (
 	github.com/andybalholm/brotli v1.1.0 // indirect
+	github.com/bmizerany/pat v0.0.0-20170815010413-6226ea591a40 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/klauspost/compress v1.17.9 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
