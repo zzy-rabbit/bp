@@ -33,7 +33,7 @@ func (s *service) Init(ctx context.Context, initParam string) error {
 		return err
 	}
 
-	if xfile.IsExist(ctx, s.config.RootPath) {
+	if !xfile.IsExist(ctx, s.config.RootPath) {
 		s.ILogger.Info(ctx, "plugin %s tus root path %s not exist, try to create", s.GetName(ctx), s.config.RootPath)
 		err = os.MkdirAll(s.config.RootPath, os.ModePerm)
 		if xerror.Error(err) {
