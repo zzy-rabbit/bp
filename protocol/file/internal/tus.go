@@ -47,7 +47,6 @@ func (s *service) NewTusHandler(ctx context.Context) (*Tus, xerror.IError) {
 		NotifyTerminatedUploads: true,
 		NotifyCreatedUploads:    true,
 		PreUploadCreateCallback: func(hook handler.HookEvent) error {
-			s.ILogger.Info(ctx, "tusd handler pre create uploads %+v", hook)
 			tusHandler.mutex.RLock()
 			defer tusHandler.mutex.RUnlock()
 			if tusHandler.PreCreateCallback != nil {
@@ -56,7 +55,6 @@ func (s *service) NewTusHandler(ctx context.Context) (*Tus, xerror.IError) {
 			return nil
 		},
 		PreFinishResponseCallback: func(hook handler.HookEvent) error {
-			s.ILogger.Info(ctx, "tusd handler pre complete uploads %+v", hook)
 			tusHandler.mutex.RLock()
 			defer tusHandler.mutex.RUnlock()
 			if tusHandler.PreCompleteCallback != nil {
@@ -84,28 +82,24 @@ func (t *Tus) startMonitor(ctx context.Context) {
 				t.ILogger.Info(ctx, "tusd handler stop")
 				return
 			case event := <-t.UploadProgress:
-				t.ILogger.Info(ctx, "tusd handler progress changed %+v", event)
 				t.mutex.RLock()
 				if t.NotifyProgressChangedCallback != nil {
 					go t.NotifyProgressChangedCallback(ctx, event)
 				}
 				t.mutex.RUnlock()
 			case event := <-t.CompleteUploads:
-				t.ILogger.Info(ctx, "tusd handler complete uploads %+v", event)
 				t.mutex.RLock()
 				if t.NotifyCompletedCallback != nil {
 					t.NotifyCompletedCallback(ctx, event)
 				}
 				t.mutex.RUnlock()
 			case event := <-t.TerminatedUploads:
-				t.ILogger.Info(ctx, "tusd handler terminated uploads %+v", event)
 				t.mutex.RLock()
 				if t.NotifyTerminatedCallback != nil {
 					t.NotifyTerminatedCallback(ctx, event)
 				}
 				t.mutex.RUnlock()
 			case event := <-t.CreatedUploads:
-				t.ILogger.Info(ctx, "tusd handler created uploads %+v", event)
 				t.mutex.RLock()
 				if t.NotifyCreatedCallback != nil {
 					t.NotifyCreatedCallback(ctx, event)
