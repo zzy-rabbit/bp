@@ -14,4 +14,6 @@ type IPlugin interface {
 	Register(func(fiberApp *fiber.App))
 	ParseQueryParams(ctx *fiber.Ctx, query any) error
 	ParseBodyParams(ctx *fiber.Ctx, body any) error
+	CORSMiddleware(ignores ...func(ctx *fiber.Ctx) bool) fiber.Handler
+	TimingMiddleware(ignores ...func(ctx *fiber.Ctx) bool) fiber.Handler
 }
