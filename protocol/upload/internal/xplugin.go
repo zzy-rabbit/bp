@@ -9,6 +9,7 @@ import (
 	"github.com/zzy-rabbit/xtools/xerror"
 	"github.com/zzy-rabbit/xtools/xfile"
 	"os"
+	"sync"
 )
 
 type service struct {
@@ -16,11 +17,13 @@ type service struct {
 	IHttp   httpApi.IPlugin `xplugin:"bp.protocol.http"`
 	config  api.Config
 	*Tus
-	cancel context.CancelFunc
+	cancel    context.CancelFunc
+	busyMutex sync.RWMutex
+	busyFiles map[string]int
 }
 
 func New(ctx context.Context) api.IPlugin {
-	return &service{}
+	return &service{busyFiles: make(map[string]struct{})}
 }
 
 func (s *service) GetName(ctx context.Context) string {

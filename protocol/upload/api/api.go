@@ -17,6 +17,14 @@ type Config struct {
 	Interval int    `json:"interval"`
 }
 
+type FileInfo struct {
+	ID   string `json:"id"`
+	Size int    `json:"size"`
+	Name string `json:"name"`
+	Type string `json:"type"`
+	Path string `json:"path"`
+}
+
 // NotifyCreatedCallback 事件通知 创建成功
 type NotifyCreatedCallback func(ctx context.Context, event handler.HookEvent)
 
