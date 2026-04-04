@@ -39,25 +39,39 @@ func (s *service) setFileBusy(ctx context.Context, id string) {
 }
 
 func (s *service) setFileFree(ctx context.Context, id string) {
-	s.busyMutex.Lock()
 	if s.busyFiles[id] > 0 {
 		s.busyFiles[id]--
 	}
 	if s.busyFiles[id] == 0 {
 		delete(s.busyFiles, id)
 	}
-	s.busyMutex.Unlock()
 }
 
-func (s *service) checkFileBusy(ctx context.Context, id string) bool {
-	s.busyMutex.RLock()
-	defer s.busyMutex.RUnlock()
+func (s *service) isFileBusy(ctx context.Context, id string) bool {
 	return s.busyFiles[id] > 0
 }
 
-func (s *service) CopyFile(ctx context.Context, id string, w io.Writer) (api.FileInfo, xerror.IError) {
+func (s *service) SetFileBusy(ctx context.Context, id string) {
+	s.busyMutex.Lock()
 	s.setFileBusy(ctx, id)
-	defer s.setFileFree(ctx, id)
+	s.mutex.Unlock()
+}
+
+func (s *service) SetFileFree(ctx context.Context, id string) {
+	s.busyMutex.Lock()
+	s.setFileFree(ctx, id)
+	s.busyMutex.Unlock()
+}
+
+func (s *service) IsFileBusy(ctx context.Context, id string) bool {
+	s.busyMutex.RLock()
+	defer s.busyMutex.RUnlock()
+	return s.isFileBusy(ctx, id)
+}
+
+func (s *service) CopyFile(ctx context.Context, id string, w io.Writer) (api.FileInfo, xerror.IError) {
+	s.SetFileBusy(ctx, id)
+	defer s.SetFileFree(ctx, id)
 
 	fileInfo, xerr := s.GetFileInfo(ctx, id)
 	if xerror.Error(xerr) {
@@ -162,7 +176,7 @@ func (s *service) startExpireMonitor(ctx context.Context) {
 					defer s.busyMutex.RUnlock()
 
 					// 文件正在被使用
-					if s.checkFileBusy(ctx, fileInfo.ID) {
+					if s.isFileBusy(ctx, fileInfo.ID) {
 						return nil
 					}
 
