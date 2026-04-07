@@ -3,7 +3,9 @@ package api
 import (
 	"context"
 	"github.com/tus/tusd/pkg/handler"
+	"github.com/zzy-rabbit/xtools/xerror"
 	"github.com/zzy-rabbit/xtools/xplugin"
+	"io"
 )
 
 const (
@@ -45,10 +47,18 @@ type PreCompleteCallback func(ctx context.Context, event handler.HookEvent) erro
 
 type IPlugin interface {
 	xplugin.IPlugin
+
 	SetNotifyCreatedCallback(ctx context.Context, callback NotifyCreatedCallback)
 	SetNotifyCompletedCallback(ctx context.Context, callback NotifyCompletedCallback)
 	SetNotifyTerminatedCallback(ctx context.Context, callback NotifyTerminatedCallback)
 	SetNotifyProgressChangedCallback(ctx context.Context, callback NotifyProgressChangedCallback)
 	SetPreCreateCallback(ctx context.Context, callback PreCreateCallback)
 	SetPreCompleteCallback(ctx context.Context, callback PreCompleteCallback)
+
+	SetFileBusy(ctx context.Context, id string)
+	SetFileFree(ctx context.Context, id string)
+	IsFileBusy(ctx context.Context, id string) bool
+
+	GetFileInfo(ctx context.Context, id string) (FileInfo, xerror.IError)
+	CopyFile(ctx context.Context, id string, w io.Writer) (FileInfo, xerror.IError)
 }
