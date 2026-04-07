@@ -52,6 +52,10 @@ func (s *service) MoveFile(ctx context.Context, id string, path string) xerror.I
 		s.ILogger.Error(ctx, "move file %s to %s fail %v", srcPath, path, err)
 		return xerror.Extend(xerror.ErrInternalError, "move file %s to %s", srcPath, path)
 	}
+	err = os.RemoveAll(srcPath + ".info")
+	if xerror.Error(err) {
+		s.ILogger.Error(ctx, "move file %s to %s success, delete %s fail %v", id, path, srcPath+".info", err)
+	}
 	return nil
 }
 
