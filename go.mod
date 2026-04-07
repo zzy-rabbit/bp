@@ -7,7 +7,7 @@ require (
 	github.com/gorilla/websocket v1.5.3
 	github.com/robfig/cron/v3 v3.0.0
 	github.com/tus/tusd v1.13.0
-	github.com/zzy-rabbit/xtools v0.0.0-20260407121752-c42d6d4ca222
+	github.com/zzy-rabbit/xtools v0.0.0-20260407122651-8a321b8c196f
 )
 
 require (
