@@ -32,46 +32,32 @@ type tusFileInfo struct {
 	} `json:"Storage"`
 }
 
-func (s *service) setFileBusy(ctx context.Context, id string) {
-	s.busyMutex.Lock()
-	s.busyFiles[id]++
-	s.busyMutex.Unlock()
-}
-
-func (s *service) setFileFree(ctx context.Context, id string) {
-	if s.busyFiles[id] > 0 {
-		s.busyFiles[id]--
+func (s *service) MoveFile(ctx context.Context, id string, path string) xerror.IError {
+	if xfile.IsExist(ctx, path) {
+		s.ILogger.Error(ctx, "file %s already exist", path)
+		return xerror.Extend(xerror.ErrAlreadyExists, path)
 	}
-	if s.busyFiles[id] == 0 {
-		delete(s.busyFiles, id)
+
+	s.FileLock(ctx, id)
+	defer s.FileUnlock(ctx, id)
+
+	srcPath := filepath.Join(s.config.RootPath, id)
+	if !xfile.IsExist(ctx, srcPath) {
+		s.ILogger.Error(ctx, "file %s not exist", srcPath)
+		return xerror.Extend(xerror.ErrNotFound, srcPath)
 	}
-}
 
-func (s *service) isFileBusy(ctx context.Context, id string) bool {
-	return s.busyFiles[id] > 0
-}
-
-func (s *service) SetFileBusy(ctx context.Context, id string) {
-	s.busyMutex.Lock()
-	s.setFileBusy(ctx, id)
-	s.mutex.Unlock()
-}
-
-func (s *service) SetFileFree(ctx context.Context, id string) {
-	s.busyMutex.Lock()
-	s.setFileFree(ctx, id)
-	s.busyMutex.Unlock()
-}
-
-func (s *service) IsFileBusy(ctx context.Context, id string) bool {
-	s.busyMutex.RLock()
-	defer s.busyMutex.RUnlock()
-	return s.isFileBusy(ctx, id)
+	err := os.Rename(srcPath, path)
+	if xerror.Error(err) {
+		s.ILogger.Error(ctx, "move file %s to %s fail %v", srcPath, path, err)
+		return xerror.Extend(xerror.ErrInternalError, "move file %s to %s", srcPath, path)
+	}
+	return nil
 }
 
 func (s *service) CopyFile(ctx context.Context, id string, w io.Writer) (api.FileInfo, xerror.IError) {
-	s.SetFileBusy(ctx, id)
-	defer s.SetFileFree(ctx, id)
+	s.FileRLock(ctx, id)
+	defer s.FileRUnlock(ctx, id)
 
 	fileInfo, xerr := s.GetFileInfo(ctx, id)
 	if xerror.Error(xerr) {
@@ -96,8 +82,8 @@ func (s *service) CopyFile(ctx context.Context, id string, w io.Writer) (api.Fil
 }
 
 func (s *service) GetFileInfo(ctx context.Context, id string) (api.FileInfo, xerror.IError) {
-	s.setFileBusy(ctx, id)
-	defer s.setFileFree(ctx, id)
+	s.FileRLock(ctx, id)
+	defer s.FileRUnlock(ctx, id)
 
 	filePath := filepath.Join(s.config.RootPath, id)
 	infoPath := filepath.Join(s.config.RootPath, id+".info")
@@ -171,14 +157,15 @@ func (s *service) startExpireMonitor(ctx context.Context) {
 						return xerror.Extend(xerror.ErrInternalError, "json unmarshal file info fail")
 					}
 
-					// 加锁保护删除，防止判断未使用后，又被标记为busy
-					s.busyMutex.RLock()
-					defer s.busyMutex.RUnlock()
-
 					// 文件正在被使用
-					if s.isFileBusy(ctx, fileInfo.ID) {
+					if s.IsFileLocked(ctx, fileInfo.ID) {
 						return nil
 					}
+
+					defer s.deleteFileSync(ctx, fileInfo.ID)
+
+					s.FileLock(ctx, fileInfo.ID)
+					defer s.FileUnlock(ctx, fileInfo.ID)
 
 					s.ILogger.Info(ctx, "expire monitor delete path %s", path)
 					err = os.RemoveAll(path)

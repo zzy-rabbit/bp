@@ -55,10 +55,13 @@ type IPlugin interface {
 	SetPreCreateCallback(ctx context.Context, callback PreCreateCallback)
 	SetPreCompleteCallback(ctx context.Context, callback PreCompleteCallback)
 
-	SetFileBusy(ctx context.Context, id string)
-	SetFileFree(ctx context.Context, id string)
-	IsFileBusy(ctx context.Context, id string) bool
+	FileLock(ctx context.Context, id string)
+	FileUnlock(ctx context.Context, id string)
+	FileRLock(ctx context.Context, id string)
+	FileRUnlock(ctx context.Context, id string)
+	IsFileLocked(ctx context.Context, id string) bool
 
 	GetFileInfo(ctx context.Context, id string) (FileInfo, xerror.IError)
+	MoveFile(ctx context.Context, id string, path string) xerror.IError
 	CopyFile(ctx context.Context, id string, w io.Writer) (FileInfo, xerror.IError)
 }

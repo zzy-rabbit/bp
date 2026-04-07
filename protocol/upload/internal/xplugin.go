@@ -19,11 +19,11 @@ type service struct {
 	*Tus
 	cancel    context.CancelFunc
 	busyMutex sync.RWMutex
-	busyFiles map[string]int
+	busyFiles map[string]*fileSync
 }
 
 func New(ctx context.Context) api.IPlugin {
-	return &service{busyFiles: make(map[string]struct{})}
+	return &service{busyFiles: make(map[string]*fileSync)}
 }
 
 func (s *service) GetName(ctx context.Context) string {
