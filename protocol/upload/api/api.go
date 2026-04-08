@@ -64,4 +64,5 @@ type IPlugin interface {
 	GetFileInfo(ctx context.Context, id string) (FileInfo, xerror.IError)
 	MoveFile(ctx context.Context, id string, path string) xerror.IError
 	CopyFile(ctx context.Context, id string, w io.Writer) (FileInfo, xerror.IError)
+	DeleteFile(ctx context.Context, id string) xerror.IError
 }

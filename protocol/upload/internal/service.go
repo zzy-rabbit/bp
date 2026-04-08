@@ -121,6 +121,32 @@ func (s *service) GetFileInfo(ctx context.Context, id string) (api.FileInfo, xer
 	}, nil
 }
 
+func (s *service) DeleteFile(ctx context.Context, id string) xerror.IError {
+	s.FileLock(ctx, id)
+	defer s.FileUnlock(ctx, id)
+
+	filePath := filepath.Join(s.config.RootPath, id)
+	if xfile.IsExist(ctx, filePath) {
+		s.ILogger.Info(ctx, "delete file %s", filePath)
+		err := os.RemoveAll(filePath)
+		if xerror.Error(err) {
+			s.ILogger.Error(ctx, "delete file %s fail %v", filePath, err)
+		}
+	}
+
+	infoPath := filepath.Join(s.config.RootPath, id+".info")
+	if xfile.IsExist(ctx, infoPath) {
+		s.ILogger.Info(ctx, "delete file %s", infoPath)
+		err := os.RemoveAll(infoPath)
+		if xerror.Error(err) {
+			s.ILogger.Error(ctx, "delete file %s fail %v", infoPath, err)
+		}
+	}
+
+	s.deleteFileSync(ctx, id)
+	return nil
+}
+
 func (s *service) startExpireMonitor(ctx context.Context) {
 	go func() {
 		defer func() {
