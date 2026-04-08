@@ -6,6 +6,7 @@ import (
 	"github.com/zzy-rabbit/bp/protocol/upload/api"
 	"github.com/zzy-rabbit/xtools/xerror"
 	"github.com/zzy-rabbit/xtools/xfile"
+	"github.com/zzy-rabbit/xtools/xtrace"
 	"io"
 	"io/fs"
 	"os"
@@ -33,6 +34,8 @@ type tusFileInfo struct {
 }
 
 func (s *service) MoveFile(ctx context.Context, id string, path string) xerror.IError {
+	defer xtrace.Trace(ctx)(id, path)
+
 	if xfile.IsExist(ctx, path) {
 		s.ILogger.Error(ctx, "file %s already exist", path)
 		return xerror.Extend(xerror.ErrAlreadyExists, path)
@@ -60,6 +63,8 @@ func (s *service) MoveFile(ctx context.Context, id string, path string) xerror.I
 }
 
 func (s *service) CopyFile(ctx context.Context, id string, w io.Writer) (api.FileInfo, xerror.IError) {
+	defer xtrace.Trace(ctx)(id)
+
 	s.FileRLock(ctx, id)
 	defer s.FileRUnlock(ctx, id)
 
@@ -86,6 +91,8 @@ func (s *service) CopyFile(ctx context.Context, id string, w io.Writer) (api.Fil
 }
 
 func (s *service) GetFileInfo(ctx context.Context, id string) (api.FileInfo, xerror.IError) {
+	defer xtrace.Trace(ctx)(id)
+
 	s.FileRLock(ctx, id)
 	defer s.FileRUnlock(ctx, id)
 
@@ -122,6 +129,8 @@ func (s *service) GetFileInfo(ctx context.Context, id string) (api.FileInfo, xer
 }
 
 func (s *service) DeleteFile(ctx context.Context, id string) xerror.IError {
+	defer xtrace.Trace(ctx)(id)
+
 	defer s.deleteFileSync(ctx, id)
 
 	s.FileLock(ctx, id)

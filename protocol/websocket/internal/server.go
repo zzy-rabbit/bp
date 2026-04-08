@@ -5,6 +5,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/zzy-rabbit/bp/protocol/websocket/api"
 	logApi "github.com/zzy-rabbit/bp/tool/log/api"
+	"github.com/zzy-rabbit/xtools/xcontext"
 	"net/http"
 	"sync"
 	"time"
@@ -63,7 +64,7 @@ func (s *server) Handler(ctx context.Context, url string, callback api.OnConnCal
 		req := api.Request{
 			Headers: r.Header,
 		}
-		ctx := context.Background()
+		ctx := xcontext.Background()
 		c := s.service.NewConnection(ctx, conn)
 		s.conns[c.RemoteAddr(ctx).String()] = c
 		callback(ctx, c, req)
