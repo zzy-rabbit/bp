@@ -122,6 +122,8 @@ func (s *service) GetFileInfo(ctx context.Context, id string) (api.FileInfo, xer
 }
 
 func (s *service) DeleteFile(ctx context.Context, id string) xerror.IError {
+	defer s.deleteFileSync(ctx, id)
+
 	s.FileLock(ctx, id)
 	defer s.FileUnlock(ctx, id)
 
@@ -133,7 +135,6 @@ func (s *service) DeleteFile(ctx context.Context, id string) xerror.IError {
 			s.ILogger.Error(ctx, "delete file %s fail %v", filePath, err)
 		}
 	}
-
 	infoPath := filepath.Join(s.config.RootPath, id+".info")
 	if xfile.IsExist(ctx, infoPath) {
 		s.ILogger.Info(ctx, "delete file %s", infoPath)
@@ -142,8 +143,6 @@ func (s *service) DeleteFile(ctx context.Context, id string) xerror.IError {
 			s.ILogger.Error(ctx, "delete file %s fail %v", infoPath, err)
 		}
 	}
-
-	s.deleteFileSync(ctx, id)
 	return nil
 }
 
