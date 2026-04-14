@@ -54,7 +54,7 @@ func (s *service) Init(ctx context.Context, initParam string) error {
 	s.Tus = tusHandler
 	s.ILogger.Info(ctx, "plugin %s init tus handler by config %+v success", s.GetName(ctx), s.config)
 
-	s.IHttp.Register(s.registerRouter)
+	s.IHttp.Register(ctx, s.registerRouter)
 
 	s.ILogger.Info(ctx, "plugin %s init success", s.GetName(ctx))
 	return nil

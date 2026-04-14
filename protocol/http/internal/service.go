@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"context"
 	"github.com/gofiber/fiber/v2"
 	"github.com/zzy-rabbit/xtools/xerror"
 )
@@ -37,6 +38,6 @@ func (s *service) ParseBodyParams(ctx *fiber.Ctx, header, body any) xerror.IErro
 	return nil
 }
 
-func (s *service) Register(r func(fiberApp *fiber.App)) {
-	r(s.fiberApp)
+func (s *service) Register(ctx context.Context, r func(ctx context.Context, fiberApp *fiber.App)) {
+	r(ctx, s.fiberApp)
 }

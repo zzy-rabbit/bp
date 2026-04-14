@@ -1,11 +1,12 @@
 package internal
 
 import (
+	"context"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/adaptor"
 )
 
-func (s *service) registerRouter(fiberApp *fiber.App) {
+func (s *service) registerRouter(ctx context.Context, fiberApp *fiber.App) {
 	group := fiberApp.Group(
 		s.config.BaseURL,
 		s.IHttp.TimingMiddleware(func(ctx *fiber.Ctx) bool {
