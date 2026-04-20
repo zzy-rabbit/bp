@@ -19,7 +19,7 @@ type HttpResponse struct {
 	Data any `json:"data"`
 }
 
-func (r *HttpResponse) MarshalJSON() ([]byte, error) {
+func (r HttpResponse) MarshalJSON() ([]byte, error) {
 	if r.IError == nil {
 		r.IError = xerror.ErrSuccess
 	}
