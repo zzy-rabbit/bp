@@ -13,20 +13,20 @@ import (
 
 // Register 注册任务（存在则返回错误）
 func (s *service) Register(ctx context.Context, name string, spec string, job api.Job) xerror.IError {
-	defer xtrace.Trace(ctx)(name)
+	defer xtrace.Trace(ctx)(name, spec)
 
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
 	if _, exists := s.taskMap[name]; exists {
 		s.ILogger.Error(ctx, "task %s already exists", name)
-		return xerror.Extend(xerror.ErrAlreadyExists, "task "+name)
+		return xerror.Extend(xerror.ErrAlreadyExists, "task %s", name)
 	}
 
 	entryID, err := s.cron.AddFunc(spec, job)
 	if err != nil {
 		s.ILogger.Error(ctx, "add task %s failed: %v", name, err)
-		return xerror.Extend(xerror.ErrInternalError, "add task "+name)
+		return xerror.Extend(xerror.ErrInternalError, "add task %s", name)
 	}
 
 	entry := s.cron.Entry(entryID)

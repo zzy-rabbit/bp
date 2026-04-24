@@ -27,4 +27,5 @@ type IPlugin interface {
 	xplugin.IPlugin
 	Register(ctx context.Context, name string, spec string, job Job) xerror.IError
 	Unregister(ctx context.Context, name string)
+	List() []Task
 }
