@@ -6,6 +6,7 @@ import (
 	websocketApi "github.com/zzy-rabbit/bp/protocol/websocket/api"
 	logApi "github.com/zzy-rabbit/bp/tool/log/api"
 	uniformApi "github.com/zzy-rabbit/bp/tool/uniform/api"
+	"github.com/zzy-rabbit/xtools/xerror"
 	"sync"
 )
 
@@ -27,17 +28,17 @@ func (s *service) GetName(ctx context.Context) string {
 	return api.PluginName
 }
 
-func (s *service) Init(ctx context.Context, initParam string) error {
+func (s *service) Init(ctx context.Context, initParam string) xerror.IError {
 	s.ILogger.Info(ctx, "plugin %s init success", s.GetName(ctx))
 	return nil
 }
 
-func (s *service) Run(ctx context.Context, runParam string) error {
+func (s *service) Run(ctx context.Context, runParam string) xerror.IError {
 	s.ILogger.Info(ctx, "plugin %s run success", s.GetName(ctx))
 	return nil
 }
 
-func (s *service) Stop(ctx context.Context, stopParam string) error {
+func (s *service) Stop(ctx context.Context, stopParam string) xerror.IError {
 	s.ILogger.Info(ctx, "plugin %s stop success", s.GetName(ctx))
 	return nil
 }

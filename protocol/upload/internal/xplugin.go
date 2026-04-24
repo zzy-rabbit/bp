@@ -30,11 +30,11 @@ func (s *service) GetName(ctx context.Context) string {
 	return api.PluginName
 }
 
-func (s *service) Init(ctx context.Context, initParam string) error {
+func (s *service) Init(ctx context.Context, initParam string) xerror.IError {
 	err := json.Unmarshal([]byte(initParam), &s.config)
 	if xerror.Error(err) {
 		s.ILogger.Error(ctx, "plugin %s init fail %v", s.GetName(ctx), err)
-		return err
+		return xerror.Extend(xerror.ErrInternalError, "init param invalid")
 	}
 
 	if !xfile.IsExist(ctx, s.config.RootPath) {
@@ -42,7 +42,7 @@ func (s *service) Init(ctx context.Context, initParam string) error {
 		err = os.MkdirAll(s.config.RootPath, os.ModePerm)
 		if xerror.Error(err) {
 			s.ILogger.Error(ctx, "plugin %s tus create root path %s fail %v", s.GetName(ctx), s.config.RootPath, err)
-			return err
+			return xerror.Extend(xerror.ErrInternalError, "create root path %s %v", s.config.RootPath, err)
 		}
 	}
 
@@ -60,7 +60,7 @@ func (s *service) Init(ctx context.Context, initParam string) error {
 	return nil
 }
 
-func (s *service) Run(ctx context.Context, runParam string) error {
+func (s *service) Run(ctx context.Context, runParam string) xerror.IError {
 	ctx, cancel := context.WithCancel(ctx)
 	s.cancel = cancel
 	s.Tus.startEventMonitor(ctx)
@@ -69,7 +69,7 @@ func (s *service) Run(ctx context.Context, runParam string) error {
 	return nil
 }
 
-func (s *service) Stop(ctx context.Context, stopParam string) error {
+func (s *service) Stop(ctx context.Context, stopParam string) xerror.IError {
 	s.cancel()
 	s.ILogger.Info(ctx, "plugin %s stop success", s.GetName(ctx))
 	return nil
