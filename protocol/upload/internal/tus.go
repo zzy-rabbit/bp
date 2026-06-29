@@ -38,6 +38,7 @@ func (s *service) NewTusHandler(ctx context.Context) (*Tus, xerror.IError) {
 	}
 	tusHandler.Config = handler.Config{
 		BasePath:                s.config.BaseURL,
+		MaxSize:                 int64(s.config.MaxSize),
 		StoreComposer:           composer,
 		NotifyCompleteUploads:   true,
 		NotifyUploadProgress:    true,

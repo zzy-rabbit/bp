@@ -17,6 +17,7 @@ type Config struct {
 	BaseURL  string `json:"base_url"`
 	Expire   int    `json:"expire"`
 	Interval int    `json:"interval"`
+	MaxSize  int    `json:"max_size"`
 }
 
 type FileInfo struct {
