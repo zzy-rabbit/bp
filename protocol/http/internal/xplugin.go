@@ -9,12 +9,17 @@ import (
 	"github.com/zzy-rabbit/bp/protocol/http/api"
 	logApi "github.com/zzy-rabbit/bp/tool/log/api"
 	"github.com/zzy-rabbit/xtools/xerror"
+	"sync"
 )
 
 type service struct {
 	network  model.Network
 	fiberApp *fiber.App
 	ILogger  logApi.IPlugin `xplugin:"bp.tool.log"`
+
+	mutex    sync.RWMutex
+	configs  []func(ctx context.Context, fiberConfig *fiber.Config)
+	handlers []func(ctx context.Context, fiberApp *fiber.App)
 }
 
 func New(ctx context.Context) api.IPlugin {
@@ -32,8 +37,6 @@ func (s *service) Init(ctx context.Context, initParam string) xerror.IError {
 		s.ILogger.Error(ctx, "plugin %s init fail %v", s.GetName(ctx), err)
 		return xerror.Extend(xerror.ErrInvalidParam, "init param invalid")
 	}
-	s.fiberApp = fiber.New()
-	s.registerMiddlewares()
 
 	s.network = network
 	s.ILogger.Info(ctx, "plugin %s init success", s.GetName(ctx))
@@ -41,6 +44,22 @@ func (s *service) Init(ctx context.Context, initParam string) xerror.IError {
 }
 
 func (s *service) Run(ctx context.Context, runParam string) xerror.IError {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	config := fiber.Config{}
+	for _, configFunc := range s.configs {
+		configFunc(ctx, &config)
+	}
+
+	s.fiberApp = fiber.New(config)
+
+	for _, handlerFunc := range s.handlers {
+		handlerFunc(ctx, s.fiberApp)
+	}
+
+	s.registerMiddlewares()
+
 	go func() {
 		addr := fmt.Sprintf("%s:%d", s.network.Host, s.network.Port)
 		err := s.fiberApp.Listen(addr)

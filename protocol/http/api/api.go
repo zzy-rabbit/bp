@@ -13,6 +13,7 @@ const (
 
 type IPlugin interface {
 	xplugin.IPlugin
+	SetConfig(ctx context.Context, r func(ctx context.Context, fiberConfig *fiber.Config))
 	Register(ctx context.Context, r func(ctx context.Context, fiberApp *fiber.App))
 	ParseQueryParams(ctx *fiber.Ctx, header, query any) xerror.IError
 	ParseBodyParams(ctx *fiber.Ctx, header, body any) xerror.IError
