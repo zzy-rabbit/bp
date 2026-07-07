@@ -77,11 +77,9 @@ func (s *service) Run(ctx context.Context, runParam string) xerror.IError {
 		// 启动 HTTPS
 		go func() {
 			httpsAddr := fmt.Sprintf("%s:%d", s.config.Https.Host, s.config.Https.Port)
-
 			err := s.rootApp.ListenTLS(httpsAddr, certPath, keyPath)
 			if err != nil {
-				s.ILogger.Error(ctx, "plugin %s https run at %s fail %v",
-					s.GetName(ctx), httpsAddr, err)
+				s.ILogger.Error(ctx, "plugin %s https run at %s fail %v", s.GetName(ctx), httpsAddr, err)
 			}
 		}()
 
