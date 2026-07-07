@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"github.com/gofiber/fiber/v2"
+	"github.com/zzy-rabbit/bp/model"
 	"github.com/zzy-rabbit/xtools/xerror"
 	"github.com/zzy-rabbit/xtools/xplugin"
 )
@@ -10,6 +11,17 @@ import (
 const (
 	PluginName = "bp.protocol.http"
 )
+
+type HttpsConfig struct {
+	model.Network
+	Enable  bool     `json:"enable"`
+	Domains []string `json:"domains"`
+}
+
+type Config struct {
+	Http  model.Network `json:"http"`
+	Https HttpsConfig   `json:"https"`
+}
 
 type IPlugin interface {
 	xplugin.IPlugin

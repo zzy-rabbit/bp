@@ -69,5 +69,5 @@ func (s *service) TimingMiddleware(ignores ...func(ctx *fiber.Ctx) bool) fiber.H
 
 func (s *service) registerMiddlewares() {
 	//middlewares := []any{"/", s.corsMiddleware(), s.timingMiddleware()}
-	//s.fiberApp.Use(middlewares...)
+	//s.rootApp.Use(middlewares...)
 }
