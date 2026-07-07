@@ -14,8 +14,9 @@ const (
 
 type HttpsConfig struct {
 	model.Network
-	Enable  bool     `json:"enable"`
-	Domains []string `json:"domains"`
+	Enable bool   `json:"enable"`
+	Domain string `json:"domain"`
+	Cert   string `json:"cert"`
 }
 
 type Config struct {

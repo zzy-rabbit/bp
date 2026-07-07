@@ -2,7 +2,6 @@ package internal
 
 import (
 	"context"
-	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -13,7 +12,6 @@ import (
 	"github.com/zzy-rabbit/bp/protocol/http/api"
 	logApi "github.com/zzy-rabbit/bp/tool/log/api"
 	"github.com/zzy-rabbit/xtools/xerror"
-	"golang.org/x/crypto/acme/autocert"
 )
 
 type service struct {
@@ -55,66 +53,68 @@ func (s *service) Run(ctx context.Context, runParam string) xerror.IError {
 	}
 
 	s.rootApp = fiber.New(config)
+
 	for _, handlerFunc := range s.handlerCallbacks {
 		handlerFunc(ctx, s.rootApp)
 	}
 
 	s.registerMiddlewares()
 
-	if s.config.Https.Enable && len(s.config.Https.Domains) > 0 {
+	// ==================== HTTPS 配置 ====================
+	if s.config.Https.Enable && s.config.Https.Domain != "" {
 		s.ILogger.Info(ctx, "plugin %s starting with https", s.GetName(ctx))
 
-		// 配置 autocert 自动证书
-		certManager := &autocert.Manager{
-			Prompt:     autocert.AcceptTOS,
-			HostPolicy: autocert.HostWhitelist(s.config.Https.Domains...),
-			Cache:      autocert.DirCache("./certs"), // 证书缓存目录
-		}
+		// 使用 Certbot 生成的证书路径
+		certPath := fmt.Sprintf("%s/live/%s/fullchain.pem",
+			s.config.Https.Cert,
+			s.config.Https.Domain,
+		)
+		keyPath := fmt.Sprintf("%s/live/%s/privkey.pem",
+			s.config.Https.Cert,
+			s.config.Https.Domain,
+		)
 
-		tlsConfig := &tls.Config{
-			GetCertificate: certManager.GetCertificate,
-		}
-
+		// 启动 HTTPS
 		go func() {
 			httpsAddr := fmt.Sprintf("%s:%d", s.config.Https.Host, s.config.Https.Port)
 
-			ln, err := tls.Listen("tcp", httpsAddr, tlsConfig)
-			if xerror.Error(err) {
-				s.ILogger.Error(ctx, "HTTPS Listen fail %v", err)
-				return
-			}
-
-			err = s.rootApp.Listener(ln)
-			if xerror.Error(err) {
-				s.ILogger.Error(ctx, "plugin %s https run at %s fail %v", s.GetName(ctx), httpsAddr, err)
+			err := s.rootApp.ListenTLS(httpsAddr, certPath, keyPath)
+			if err != nil {
+				s.ILogger.Error(ctx, "plugin %s https run at %s fail %v",
+					s.GetName(ctx), httpsAddr, err)
 			}
 		}()
 
-		// 3. 启动 HTTP 重定向服务（proxyApp）
+		// HTTP 跳转到 HTTPS
 		if s.proxyApp == nil {
 			s.proxyApp = fiber.New()
 		}
 		s.proxyApp.All("*", func(c *fiber.Ctx) error {
-			// 强制跳转到 HTTPS
-			httpsURL := "https://" + c.Hostname() + c.OriginalURL()
+			host := c.Hostname()
+			if host == "" {
+				host = c.Get("Host")
+			}
+			httpsURL := "https://" + host + c.OriginalURL()
 			return c.Redirect(httpsURL, fiber.StatusMovedPermanently)
 		})
 
 		go func() {
-			httpAddr := fmt.Sprintf("%s:%d", s.config.Http.Host, s.config.Http.Port) // 注意这里用 http 的配置
+			httpAddr := fmt.Sprintf("%s:%d", s.config.Http.Host, s.config.Http.Port)
 			if err := s.proxyApp.Listen(httpAddr); err != nil {
 				s.ILogger.Error(ctx, "http redirect server failed at %s: %v", httpAddr, err)
 			}
 		}()
 	} else {
+		// 普通 HTTP
 		go func() {
 			addr := fmt.Sprintf("%s:%d", s.config.Http.Host, s.config.Http.Port)
 			if err := s.rootApp.Listen(addr); err != nil {
-				s.ILogger.Error(ctx, "plugin %s run %s at addr %s fail %v", s.GetName(ctx), runParam, addr, err)
-				return
+				s.ILogger.Error(ctx, "plugin %s run %s at addr %s fail %v",
+					s.GetName(ctx), runParam, addr, err)
 			}
 		}()
 	}
+
 	s.ILogger.Info(ctx, "plugin %s run success", s.GetName(ctx))
 	return nil
 }
