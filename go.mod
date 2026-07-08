@@ -8,6 +8,7 @@ require (
 	github.com/robfig/cron/v3 v3.0.0
 	github.com/tus/tusd v1.13.0
 	github.com/zzy-rabbit/xtools v0.0.0-20260507031024-345d6b49dff4
+	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 )
 
 require (
@@ -23,5 +24,6 @@ require (
 	github.com/valyala/fasthttp v1.51.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect
 	golang.org/x/sys v0.28.0 // indirect
+	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
 )
